@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+}
+  
+datasource db {
+  provider = "postgresql"
+}
+
+enum Tariff {
+  FREE
+  PRO
+  MAX
+}
+enum Status {
+  ACTIVE
+  CANCELED
+  PAUSED
+  DONE
+}
+enum Role {
+  MEMBER
+  ADMIN
+  OWNER
+}
+enum TaskStatus {
+  PROGRESS
+  PAUSED
+  CANCELED
+  DONE
+}
+
+model User {
+  id              String                  @id @default(uuid())
+
+  email           String                  @unique
+  password        String
+  name            String 
+
+  orgs            UsersInOrganizations[]
+  tasks           Task[]
+}
+
+model Organization {
+  id              String                  @id @default(uuid())
+  title           String
+  members         UsersInOrganizations[]
+  tariff          Tariff                  @default(FREE)
+  projects        Project[]
+}
+
+model Project {
+  id              String                  @id @default(uuid())
+  orgId           String
+  org             Organization            @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  
+  title           String
+  status          Status                  @default(ACTIVE)
+  tasks           Task[]
+}
+  
+model Task {
+  id              String                  @id @default(uuid())
+  projectId       String
+  project         Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title           String
+  description     String?
+  status          TaskStatus              @default(PROGRESS)
+  priority        Int                     @default(10)
+  assigned        User[]
+
+  createdAt       DateTime                @default(now())
+  deadline        DateTime?
+}
+
+model UsersInOrganizations {
+  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+
+  org             Organization            @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  orgId           String
+
+  role            Role                    @default(MEMBER)
+
+  @@id([userId, orgId])
+}
