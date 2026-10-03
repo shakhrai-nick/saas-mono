@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    shm_size: 256mb
+    ports: 
+      - "54320:5432"
+    environment:
+      - POSTGRES_DB=main
+      - POSTGRES_USER=developer
+      - POSTGRES_PASSWORD=045120
+    volumes:
+      - db_data:/etc/data
+
+volumes:
+  db_data:
